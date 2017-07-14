@@ -5,6 +5,7 @@ const Assertion = require("../index");
 
 
 module.exports = Unit.Suite("Test.Unit.Assertion")([
+    Unit.Test("AllGood is indeed all good")(Assertion.AllGood),
     Unit.Suite(".equals")([
         Unit.Test("String")(Assertion.equals("Hello")("Hello")),
         Unit.Test("Int")(Assertion.equals(123)(123)),

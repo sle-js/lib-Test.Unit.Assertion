@@ -91,6 +91,7 @@ const notEquals = a =>
 
 
 module.exports = {
+    AllGood,
     equals,
     isTrue,
     notEquals
