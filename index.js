@@ -1,3 +1,6 @@
+const Maybe = mrequire("core:Native.Data.Maybe:1.0.0");
+
+
 function myStackTrace() {
     const orig = Error.prepareStackTrace;
     Error.prepareStackTrace = function (_, stack) {
@@ -12,65 +15,78 @@ function myStackTrace() {
 }
 
 
-const rejectPromise = message => {
+const rejectPayload = message => {
     const stack = myStackTrace();
     const call = stack[2];
-    return Promise.reject({
+    return {
         fileName: call.getFileName(),
         lineNumber: call.getLineNumber(),
         message: message
-    });
+    };
 };
 
 
-function AssertionType(content) {
+function Assertion$(content) {
     this.content = content;
 }
 
 
 const AllGood =
-    new AssertionType(Promise.resolve(true));
+    new Assertion$([0]);
 
 
-AssertionType.prototype.then = function (fThen, fCatch) {
-    return this.content.then(fThen, fCatch);
+const Fail = a =>
+    new Assertion$([1, a]);
+
+
+Assertion$.prototype.isAllGood = function () {
+    return this.content[0] === 0;
 };
 
 
-AssertionType.prototype.catch = function (fCatch) {
-    return this.content.catch(fCatch);
+Assertion$.prototype.failContent = function () {
+    return this.content[0] === 0
+        ? Maybe.Nothing
+        : Maybe.Just(this.content[1]);
 };
 
 
-AssertionType.prototype.isTrue = function (value) {
+Assertion$.prototype.failMessage = function () {
+    return this.content[0] === 0
+        ? Maybe.Nothing
+        : Maybe.Just(this.content[1].message);
+};
+
+
+Assertion$.prototype.isTrue = function (value) {
     if (value) {
         return this;
     } else {
-        const rejection = rejectPromise("isTrue failed");
-        return new AssertionType(this.content.then(_ => rejection));
+        const rejection = rejectPayload("isTrue failed");
+        return Fail(rejection);
     }
 };
 
 
-AssertionType.prototype.equals = function (a) {
+Assertion$.prototype.equals = function (a) {
     return b => {
         if (a === b) {
             return this;
         } else {
-            const rejection = rejectPromise("equals failed: " + a.toString() + " != " + b.toString());
-            return new AssertionType(this.content.then(_ => rejection));
+            const rejection = rejectPayload("equals failed: " + a.toString() + " != " + b.toString());
+            return Fail(rejection);
         }
     }
 };
 
 
-AssertionType.prototype.notEquals = function (a) {
+Assertion$.prototype.notEquals = function (a) {
     return b => {
         if (a !== b) {
             return this;
         } else {
-            const rejection = rejectPromise("notEquals failed: " + a.toString() + " == " + b.toString());
-            return new AssertionType(this.content.then(_ => rejection));
+            const rejection = rejectPayload("notEquals failed: " + a.toString() + " == " + b.toString());
+            return Fail(rejection);
         }
     }
 };
@@ -83,7 +99,7 @@ const equals = a =>
 const isTrue = expression =>
     expression
         ? AllGood
-        : new AssertionType(rejectPromise("isTrue failed"));
+        : Fail(rejectPayload("isTrue failed"));
 
 
 const notEquals = a =>
