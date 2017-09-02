@@ -59,22 +59,32 @@ Assertion$.prototype.failMessage = function () {
 
 
 Assertion$.prototype.isTrue = function (value) {
-    if (value) {
+    if (this.isAllGood()) {
+        if (value) {
+            return this;
+        } else {
+            const rejection = rejectPayload("isTrue failed");
+            return Fail(rejection);
+        }
+    }
+    else {
         return this;
-    } else {
-        const rejection = rejectPayload("isTrue failed");
-        return Fail(rejection);
     }
 };
 
 
 Assertion$.prototype.equals = function (a) {
     return b => {
-        if (a === b) {
+        if (this.isAllGood()) {
+            if (a === b) {
+                return this;
+            } else {
+                const rejection = rejectPayload("equals failed: " + a.toString() + " != " + b.toString());
+                return Fail(rejection);
+            }
+        }
+        else {
             return this;
-        } else {
-            const rejection = rejectPayload("equals failed: " + a.toString() + " != " + b.toString());
-            return Fail(rejection);
         }
     }
 };
@@ -82,11 +92,15 @@ Assertion$.prototype.equals = function (a) {
 
 Assertion$.prototype.notEquals = function (a) {
     return b => {
-        if (a !== b) {
-            return this;
+        if (this.isAllGood()) {
+            if (a !== b) {
+                return this;
+            } else {
+                const rejection = rejectPayload("notEquals failed: " + a.toString() + " == " + b.toString());
+                return Fail(rejection);
+            }
         } else {
-            const rejection = rejectPayload("notEquals failed: " + a.toString() + " == " + b.toString());
-            return Fail(rejection);
+            return this;
         }
     }
 };

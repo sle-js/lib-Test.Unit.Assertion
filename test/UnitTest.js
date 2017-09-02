@@ -24,5 +24,8 @@ module.exports = Unit.Suite("Test.Unit.Assertion")([
         Unit.Test("Int")(toPromise(Assertion.notEquals(123)(456))),
         Unit.Test("Boolean")(toPromise(Assertion.notEquals(true)(false)))
     ]),
-    Unit.Test(".equals Message")(toPromise(Assertion.equals(Assertion.equals("Hello")("World").failMessage().withDefault(""))("equals failed: Hello != World")))
+    Unit.Test(".equals Message")(toPromise(Assertion.equals(Assertion.equals("Hello")("World").failMessage().withDefault(""))("equals failed: Hello != World"))),
+    Unit.Test("A fail on an already failed assertion does not change the first assertion message")(toPromise(
+        Assertion.equals(Assertion.equals("Hello")("World").isTrue(false).failMessage().withDefault(""))("equals failed: Hello != World")
+    )),
 ]);
