@@ -39,6 +39,12 @@ const Fail = a =>
     new Assertion$([1, a]);
 
 
+const fail = msg => {
+    const rejection = rejectPayload(msg);
+    return Fail(rejection);
+};
+
+
 Assertion$.prototype.isAllGood = function () {
     return this.content[0] === 0;
 };
@@ -122,6 +128,7 @@ const notEquals = a =>
 
 module.exports = {
     AllGood,
+    fail,
     equals,
     isTrue,
     notEquals
